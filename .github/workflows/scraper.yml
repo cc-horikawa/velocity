@@ -10,31 +10,48 @@ name: Daily Crypto Scraper
 # 
 on:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '0 5 * * *'
   workflow_dispatch:       # 手動でも実行できるように
 
 jobs:
   run:
-    runs-on: ubuntu-latest  # GitHubの標準Linux環境
+    runs-on: ubuntu-latest
 
     steps:
-      # ステップ1: コードをチェックアウト
+      # 1. コードのチェックアウト（pushのためにtokenを渡すのが重要）
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # ステップ2: Python 3.10 をセットアップ
+      # 2. Python 3.10 セットアップ
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # ステップ3: Playwrightと依存関係をインストール
+      # 3. Playwright と BeautifulSoup のインストール
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
           pip install playwright beautifulsoup4
           python -m playwright install chromium
 
-      # ステップ4: クローラースクリプトを実行
+      # 4. クローラースクリプト実行（標準出力ログも保存）
       - name: Run crawler
-        run: python basic_crawler.py
+        run: python basic_crawler.py > output.log 2>&1
+
+      # 5. Git の設定（ユーザー名とメールアドレス）
+      - name: Set up Git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # 6. 結果ファイルをコミットしてPush
+      - name: Commit and push result
+        run: |
+          git add result.csv output.log
+          git commit -m "Add result from scraper: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

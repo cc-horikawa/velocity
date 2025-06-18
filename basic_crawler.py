@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 import time
+import csv
 
 url = "https://coinmarketcap.com/currencies/brilliantcrypto/historical-data/"
 
@@ -13,8 +14,8 @@ with sync_playwright() as p:
     page.wait_for_selector("tbody", timeout=20000)
     print("tbodyが正常に表示されました。データの取得を開始します。")
 
-    # 「Loading data...」ではなく、実際のデータが描画されるのを待機
-    for _ in range(20):  # 最大20回（約10秒）試行
+    # 実データ（6列のtd）描画を待機
+    for _ in range(20):
         html = page.content()
         soup = BeautifulSoup(html, "html.parser")
         tbody = soup.find("tbody")
@@ -27,13 +28,19 @@ with sync_playwright() as p:
         browser.close()
         exit()
 
-    # 正常に取得できたデータを表示
+    # データを抽出
     data = []
     for row in rows:
         cols = [td.text.strip() for td in row.find_all("td")]
         data.append(cols)
 
-    for row in data:
-        print(row)
+    # CSVに保存
+    with open("result.csv", "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        #CoinMarketCapのHistoryから
+        writer.writerow(["Date", "Open", "High", "Low", "Close", "Volume"])
+        writer.writerows(data)
+
+    print(f"{len(data)} 行を result.csv に保存しました。")
 
     browser.close()
