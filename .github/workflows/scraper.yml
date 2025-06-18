@@ -10,7 +10,7 @@ name: Daily Crypto Scraper
 # 
 on:
   schedule:
-    - cron: '0 5 * * *'
+    - cron: '30 5 * * *'
   workflow_dispatch:       # 手動でも実行できるように
 
 jobs:
