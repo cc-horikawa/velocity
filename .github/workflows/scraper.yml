@@ -18,39 +18,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. コードのチェックアウト（pushのためにtokenを渡すのが重要）
+      # 1. コードを取得
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. Python 3.10 セットアップ
+      # 2. Pythonセットアップ
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # 3. Playwright と BeautifulSoup のインストール
+      # 3. 依存ライブラリをインストール
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
           pip install playwright beautifulsoup4
           python -m playwright install chromium
 
-      # 4. クローラースクリプト実行（標準出力ログも保存）
-      - name: Run crawler
-        run: python basic_crawler.py > output.log 2>&1
+      # 4. クローラー実行（URLを引数で渡す）
+      - name: Run crawler with URL
+        run: |
+          python basic_crawler.py https://coinmarketcap.com/currencies/brilliantcrypto/historical-data/ > output.log 2>&1
 
-      # 5. Git の設定（ユーザー名とメールアドレス）
+      # 5. Git設定
       - name: Set up Git config
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # 6. 結果ファイルをコミットしてPush
+      # 6. コミット＆Push（CSVとログ）
       - name: Commit and push result
         run: |
-          git add result.csv output.log
+          git add result.csv
           git commit -m "Add result from scraper: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" || echo "No changes to commit"
           git push
         env:
