@@ -1,0 +1,40 @@
+name: Daily Crypto Scraper
+
+# 実行タイミング：
+# 毎日午前7時（JST）      0 22 * * *
+# 毎日午前9時（JST）      0 0 * * *
+# 毎日午前10時（JST）     0 1 * * *
+# 毎日午前11時（JST）     0 2 * * *
+#
+# ログは最大4000行まで表示可能（それ以上は切り捨て）
+# 
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:       # 手動でも実行できるように
+
+jobs:
+  run:
+    runs-on: ubuntu-latest  # GitHubの標準Linux環境
+
+    steps:
+      # ステップ1: コードをチェックアウト
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # ステップ2: Python 3.10 をセットアップ
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # ステップ3: Playwrightと依存関係をインストール
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install playwright beautifulsoup4
+          python -m playwright install chromium
+
+      # ステップ4: クローラースクリプトを実行
+      - name: Run crawler
+        run: python basic_crawler.py
