@@ -7,10 +7,12 @@ name: Daily Crypto Scraper
 # 毎日午前11時（JST）     0 2 * * *
 #
 # ログは最大4000行まで表示可能（それ以上は切り捨て）
+# GitHub Actionsのcronジョブは、設定した時刻に正確に実行される保証はなく、遅延が発生することが仕様。
+# 多くのジョブが集中する毎時0分を避ける。
 # 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '16 0 * * *'
   workflow_dispatch:       # 手動でも実行できるように
 
 jobs:
